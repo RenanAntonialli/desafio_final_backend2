@@ -1,4 +1,4 @@
-# Servidor Express SQL
+# Desafio Final Back-end II - API RESTful com Node.js
 
 ## Requisitos
 
