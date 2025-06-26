@@ -2,49 +2,102 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const path = require('path');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 
-// Middlewares globais
+// Serviços
+const produtosService = require('./services/produtosService');
+const clientesService = require('./services/clientesService');
+const usuariosService = require('./services/usuariosService');
+
+// Middlewares e Rotas de API REST
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
-// View engine Pug
+// Configuração do Pug
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-// Rotas
-app.get('/', (req, res) => res.render('index'));
+// Rotas REST
 app.use('/clientes', require('./routes/clientes'));
 app.use('/produtos', require('./routes/produtos'));
 app.use('/usuarios', require('./routes/usuarios'));
-app.use('/', require('./routes/auth'));
+app.use('/', require('./routes/auth')); // login/logout
 
-// Rotas das views (web minimalista)
-app.get('/login', (req, res) => res.render('login'));
-app.get('/logout', (req, res) => res.render('logout'));
+// Middleware para checar autenticação na web
+function webAuth(req, res, next) {
+  const token = req.cookies.token;
+  if (!token) return res.redirect('/login');
+  try {
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch {
+    res.clearCookie('token');
+    return res.redirect('/login');
+  }
+}
 
-// Para listar produtos e clientes em interface web (simples)
-const produtosService = require('./services/produtosService');
-const clientesService = require('./services/clientesService');
+// Página inicial
+app.get('/', (req, res) => {
+  const user = req.cookies.token ? true : false;
+  res.render('index', { user });
+});
 
+// Login (GET e POST)
+app.get('/login', (req, res) => res.render('login', { error: null }));
+
+app.post('/login', async (req, res) => {
+  const { usuario, senha } = req.body;
+  const user = await usuariosService.getUsuarioByUsername(usuario);
+  const bcrypt = require('bcrypt');
+  if (!user || !(await bcrypt.compare(senha, user.senha))) {
+    return res.render('login', { error: 'Usuário ou senha inválidos' });
+  }
+  const token = jwt.sign({ id: user.id, usuario: user.usuario }, process.env.JWT_SECRET, { expiresIn: '2h' });
+  await usuariosService.setUserToken(user.id, token);
+  res.cookie('token', token, { httpOnly: true });
+  res.redirect('/');
+});
+
+// Logout (GET e POST)
+app.get('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.render('logout');
+});
+
+app.post('/logout', async (req, res) => {
+  const token = req.cookies.token || req.headers['authorization']?.split(' ')[1];
+  if (token) {
+    const pool = require('./configs/db');
+    await pool.query('UPDATE usuarios SET token = NULL WHERE token = ?', [token]);
+  }
+  res.clearCookie('token');
+  res.json({ message: 'Logout efetuado com sucesso' });
+});
+
+// Produtos (público)
 app.get('/produtos', async (req, res) => {
   const produtos = await produtosService.getAllProdutos();
-  res.render('produtos', { produtos });
-});
-app.get('/clientes', async (req, res) => {
-  // Só renderiza se for autenticado (token via query para demo)
-  const token = req.query.token;
-  if (!token) return res.status(401).send('Token necessário');
-  const jwt = require('jsonwebtoken');
-  try {
-    jwt.verify(token, process.env.JWT_SECRET);
-    const clientes = await clientesService.getAllClientes();
-    res.render('clientes', { clientes });
-  } catch {
-    res.status(401).send('Token inválido');
-  }
+  const user = req.cookies.token ? true : false;
+  res.render('produtos', { produtos, user });
 });
 
-// 404
+// Clientes (protegido)
+app.get('/clientes', webAuth, async (req, res) => {
+  const clientes = await clientesService.getAllClientes();
+  const user = true;
+  res.render('clientes', { clientes, user });
+});
+
+// Usuários (protegido)
+app.get('/usuarios', webAuth, async (req, res) => {
+  const usuarios = await usuariosService.getAllUsuarios();
+  const user = true;
+  res.render('usuarios', { usuarios, user });
+});
+
+// 404 handler
 app.use((req, res) => res.status(404).json({ message: 'Not found' }));
 
 // Inicia servidor
