@@ -1,9 +1,19 @@
-doctype html
-html
-  head
-    title Clientes
-  body
-    h2 Lista de Clientes (Privado)
-    ul
+extends layout
+
+block content
+  h1 Clientes
+  table.table.table-bordered
+    thead
+      tr
+        th Nome
+        th Sobrenome
+        th Email
+        th Idade
+    tbody
       each cliente in clientes
-        li #{cliente.nome} #{cliente.sobrenome} - #{cliente.email}
+        tr
+          td= cliente.nome
+          td= cliente.sobrenome
+          td= cliente.email
+          td= cliente.idade
+  a.btn.btn-secondary.mt-3(href="/") Voltar ao início

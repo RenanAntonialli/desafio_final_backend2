@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  h1 Usuários
+  table.table.table-bordered
+    thead
+      tr
+        th ID
+        th Usuário
+    tbody
+      each usuario in usuarios
+        tr
+          td= usuario.id
+          td= usuario.usuario
+  a.btn.btn-secondary.mt-3(href="/") Voltar ao início

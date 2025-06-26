@@ -1,14 +1,14 @@
-doctype html
-html
-  head
-    title Login
-  body
-    h2 Login
-    form(method="post", action="/login")
-      label Usuário: 
-      input(type="text", name="usuario")
-      br
-      label Senha: 
-      input(type="password", name="senha")
-      br
-      button(type="submit") Entrar
+extends layout
+
+block content
+  h1 Login
+  form(method="POST", action="/login")
+    .mb-3
+      label.form-label Usuário
+      input.form-control(type="text", name="usuario", required)
+    .mb-3
+      label.form-label Senha
+      input.form-control(type="password", name="senha", required)
+    button.btn.btn-primary(type="submit") Entrar
+  if error
+    .alert.alert-danger.mt-3= error

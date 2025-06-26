@@ -1,8 +1,6 @@
-doctype html
-html
-  head
-    title Logout
-  body
-    h2 Logout
-    form(method="post", action="/logout")
-      button(type="submit") Sair
+extends layout
+
+block content
+  h1 Logout
+  p Você saiu do sistema.
+  a.btn.btn-primary(href="/login") Fazer login novamente

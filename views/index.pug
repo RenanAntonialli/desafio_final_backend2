@@ -1,11 +1,16 @@
-doctype html
-html
-  head
-    title Página Inicial
-  body
-    h1 Bem-vindo à API!
-    ul
-      li: a(href="/login") Login
-      li: a(href="/produtos") Produtos (público)
-      li: a(href="/clientes") Clientes (privado)
-      li: a(href="/usuarios") Usuários (privado)
+extends layout
+
+block content
+  h1 Sistema de Gestão
+  p Bem-vindo ao sistema de clientes e produtos.
+  ul
+    li
+      a(href="/produtos") Listar Produtos
+    li
+      a(href="/clientes") Listar Clientes (requer login)
+    li
+      a(href="/usuarios") Listar Usuários (requer login)
+    li
+      a(href="/login") Login
+    li
+      a(href="/logout") Logout
