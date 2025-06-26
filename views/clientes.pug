@@ -1,0 +1,9 @@
+doctype html
+html
+  head
+    title Clientes
+  body
+    h2 Lista de Clientes (Privado)
+    ul
+      each cliente in clientes
+        li #{cliente.nome} #{cliente.sobrenome} - #{cliente.email}

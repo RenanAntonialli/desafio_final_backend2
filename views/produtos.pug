@@ -1,0 +1,9 @@
+doctype html
+html
+  head
+    title Produtos
+  body
+    h2 Lista de Produtos (Público)
+    ul
+      each produto in produtos
+        li #{produto.nome} - R$#{produto.preco}
