@@ -1,4 +1,4 @@
-# Desafio Final Back-end II - API RESTful com Node.js
+# desafio_final_backend2 - API RESTful com Node.js
 
 ## Requisitos
 
@@ -9,7 +9,7 @@
 
 ```bash
 git clone <repo>
-cd Servidor-Express-SQL
+cd desafio_final_backend2
 cp .env.example .env
 npm install
 ```
