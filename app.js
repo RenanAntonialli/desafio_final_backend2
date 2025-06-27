@@ -100,8 +100,4 @@ app.get('/usuarios', webAuth, async (req, res) => {
 // 404 handler
 app.use((req, res) => res.status(404).json({ message: 'Not found' }));
 
-// Inicia servidor
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
-
 module.exports = app;
