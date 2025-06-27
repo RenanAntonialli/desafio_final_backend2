@@ -5,7 +5,7 @@ module.exports = function (req, res, next) {
   const cachedData = cache.get(key);
 
   if (cachedData) {
-    console.log('Resposta servida do cache');
+    console.log('Cache hit: retornando clientes do cache...');
     return res.json(cachedData);
   }
 
@@ -13,7 +13,7 @@ module.exports = function (req, res, next) {
   res.sendJson = res.json;
   res.json = (body) => {
     cache.set(key, body);
-    console.log('Resposta servida do banco de dados');
+    console.log('Cache miss: buscando clientes no banco de dados...');
     res.sendJson(body);
   };
 
