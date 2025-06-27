@@ -10,7 +10,7 @@ const produtosService = require('./services/produtosService');
 const clientesService = require('./services/clientesService');
 const usuariosService = require('./services/usuariosService');
 
-// Middlewares e Rotas de API REST
+// Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -19,13 +19,7 @@ app.use(cookieParser());
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-// Rotas REST
-app.use('/clientes', require('./routes/clientes'));
-app.use('/produtos', require('./routes/produtos'));
-app.use('/usuarios', require('./routes/usuarios'));
-app.use('/', require('./routes/auth')); // login/logout
-
-// Middleware para checar autenticação na web
+// --- Middleware para checar autenticação na web ---
 function webAuth(req, res, next) {
   const token = req.cookies.token;
   if (!token) return res.redirect('/login');
@@ -44,7 +38,7 @@ app.get('/', (req, res) => {
   res.render('index', { user });
 });
 
-// Login (GET e POST)
+// Login (GET e POST) - WEB
 app.get('/login', (req, res) => res.render('login', { error: null }));
 
 app.post('/login', async (req, res) => {
@@ -60,22 +54,13 @@ app.post('/login', async (req, res) => {
   res.redirect('/');
 });
 
-// Logout (GET e POST)
+// Logout (GET) - WEB
 app.get('/logout', (req, res) => {
   res.clearCookie('token');
   res.render('logout');
 });
 
-app.post('/logout', async (req, res) => {
-  const token = req.cookies.token || req.headers['authorization']?.split(' ')[1];
-  if (token) {
-    const pool = require('./configs/db');
-    await pool.query('UPDATE usuarios SET token = NULL WHERE token = ?', [token]);
-  }
-  res.clearCookie('token');
-  res.json({ message: 'Logout efetuado com sucesso' });
-});
-
+// --- ROTAS WEB PROTEGIDAS (Páginas) ---
 // Produtos (público)
 app.get('/produtos', async (req, res) => {
   const produtos = await produtosService.getAllProdutos();
@@ -95,6 +80,24 @@ app.get('/usuarios', webAuth, async (req, res) => {
   const usuarios = await usuariosService.getAllUsuarios();
   const user = true;
   res.render('usuarios', { usuarios, user });
+});
+
+// --- ROTAS REST/API ---
+// (Devem vir depois das rotas web!)
+app.use('/clientes', require('./routes/clientes'));
+app.use('/produtos', require('./routes/produtos'));
+app.use('/usuarios', require('./routes/usuarios'));
+app.use('/', require('./routes/auth')); // login/logout (API REST)
+
+// Logout (POST) - API REST
+app.post('/logout', async (req, res) => {
+  const token = req.cookies.token || req.headers['authorization']?.split(' ')[1];
+  if (token) {
+    const pool = require('./configs/db');
+    await pool.query('UPDATE usuarios SET token = NULL WHERE token = ?', [token]);
+  }
+  res.clearCookie('token');
+  res.json({ message: 'Logout efetuado com sucesso' });
 });
 
 // 404 handler
