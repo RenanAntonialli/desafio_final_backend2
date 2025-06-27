@@ -8,7 +8,7 @@
 ## Instalação
 
 ```bash
-git clone <repo>
+git clone https://github.com/RenanAntonialli/desafio_final_backend2.git
 cd desafio_final_backend2
 cp .env.example .env
 npm install
